@@ -31,13 +31,13 @@ public abstract class KSite{
 		while(true){
 			Socket socket = serverSocket.accept();
 
-			//������� ����� ��� ���������� ��������
+			//создаем поток для одновременной бработки нескольких запросов
 			new Thread(new Runnable(){
 				public void run(){
 					try{
 						Thread.sleep(100);
 
-						handle(socket);
+						handle(socket);//обработка запроса
 					}catch(Exception ex){
 						ex.printStackTrace();
 					}
