@@ -1,4 +1,4 @@
-package kro.site;
+package kro.server;
 
 public class Request{
 	String requestLine;
@@ -25,7 +25,7 @@ public class Request{
 				return headers[i][1];
 			}
 		}
-		return null;
+		return "";
 	}
 	
 	public byte[] getContent(){

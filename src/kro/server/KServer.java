@@ -2,7 +2,7 @@
  * @author Krokozyabra
  */
 
-package kro.site;
+package kro.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public abstract class KSite{
+public abstract class KServer{
 	ServerSocket serverSocket;
 	
 	
-	int kaTimeout = 0;
+	int kaTimeout = 0;//default keep-alive timeout
 	
-	public KSite(int port){
+	public KServer(int port){
 		new Thread(new Runnable(){
 			public void run(){
 				try{
@@ -55,12 +55,12 @@ public abstract class KSite{
 		try{
 			byte[] bs = getBytes(socket);
 			char[] cs = getChars(bs);
-			String[] lines = getLines(cs);
+			String[] lines = getLines(cs);//разбиение на строки
 
 
-			request.requestLine = lines[0];
-			request.headers = getHeaders(lines);
-			request.content = getContent(bs, cs);
+			request.requestLine = lines[0];//первая строка
+			request.headers = getHeaders(lines);//получение хейдеров
+			request.content = getContent(bs, cs);//контента
 			request.lines = lines;
 			
 			if(!socket.getKeepAlive() && request.getHeader("Connection").contains("keep-alive")){
@@ -76,12 +76,14 @@ public abstract class KSite{
 	private void addKeepAliveThread(Socket socket){
 		new Thread(new Runnable(){
 			public void run(){
-				long fTime = System.currentTimeMillis();
+				long fTime = System.currentTimeMillis();//текущее время
+				
+				boolean responsed = false;//не закрывать, пока не будет ответа
 				
 				la: while(true){
 					try{
 						while(socket.getInputStream().available() == 0){
-							if(socket.isClosed() || System.currentTimeMillis() - fTime > kaTimeout){
+							if((socket.isClosed() || System.currentTimeMillis() - fTime > kaTimeout) && responsed){
 								try{
 									socket.close();
 								}catch(Exception ex){
@@ -89,10 +91,13 @@ public abstract class KSite{
 								break la;
 							}
 						}
+						
 						fTime = System.currentTimeMillis();
 						Thread.sleep(100);
-
+						
 						handle(socket);
+						
+						responsed = true;
 					}catch(Exception ex){
 						ex.printStackTrace();
 					}

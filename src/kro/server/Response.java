@@ -1,7 +1,8 @@
-package kro.site;
+package kro.server;
 
 
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class Response{
@@ -12,7 +13,7 @@ public class Response{
 	ArrayList<String> headersList = new ArrayList<String>();
 
 
-	public void addHeader(String header){
+	public void addHeader(String header){//ex.: addHeader("Connection: Keep-Alive");
 		headersList.add(header);
 		headers = new String[headersList.size()];
 
@@ -30,14 +31,18 @@ public class Response{
 	}
 
 
-	public void send(OutputStream os) throws Exception{
+	public void send(Socket socket) throws Exception{
+		OutputStream os = socket.getOutputStream();
+		
 		String response = "";
 		response += statusLine + "\r\n";
 		if(headers != null){
-
 			for(int i = 0; i < headers.length; i++){
 				response += headers[i] + "\r\n";
 			}
+		}
+		if(socket.getKeepAlive()){
+			addHeader("Connection: Keep-Alive");
 		}
 		response += "\r\n";
 
